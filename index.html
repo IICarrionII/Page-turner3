@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Turner Bookstore</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Page Turner</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Welcome to Page Turner</h2>
+        <p>Your gateway to literary adventures!</p>
+        <section id="books">
+            <h3>Featured Books</h3>
+            <div class="book-grid">
+                <div class="book">
+                    <img src="images/book1.jpg" alt="Book 1">
+                    <h4>Book Title 1</h4>
+                    <p>$10.99</p>
+                    <button onclick="addToCart('Book Title 1', 10.99)">Add to Cart</button>
+                </div>
+                <div class="book">
+                    <img src="images/book2.jpg" alt="Book 2">
+                    <h4>Book Title 2</h4>
+                    <p>$12.99</p>
+                    <button onclick="addToCart('Book Title 2', 12.99)">Add to Cart</button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>© 2024 Page Turner Bookstore. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
