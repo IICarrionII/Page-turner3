@@ -18,22 +18,8 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 // Load Books
 function loadBooks() {
     const bookList = document.getElementById("book-list");
+    if (!bookList) return; // Only run this on pages with the book list
     bookList.innerHTML = books.map(book => `
-        <div class="book">
-            <img src="${book.image}" alt="${book.title}">
-            <h4>${book.title}</h4>
-            <p>$${book.price.toFixed(2)}</p>
-            <button onclick="addToCart(${book.id})">Add to Cart</button>
-        </div>
-    `).join("");
-}
-
-// Search Filter
-function filterBooks() {
-    const query = document.getElementById("search-bar").value.toLowerCase();
-    const filteredBooks = books.filter(book => book.title.toLowerCase().includes(query));
-    const bookList = document.getElementById("book-list");
-    bookList.innerHTML = filteredBooks.map(book => `
         <div class="book">
             <img src="${book.image}" alt="${book.title}">
             <h4>${book.title}</h4>
@@ -54,20 +40,30 @@ function addToCart(id) {
     }
     localStorage.setItem("cart", JSON.stringify(cart));
     alert(`${book.title} added to cart!`);
+
+    // Update the cart on the cart page if applicable
+    loadCart();
 }
 
 // Load Cart
 function loadCart() {
     const cartItems = document.getElementById("cart-items");
     const cartTotal = document.getElementById("cart-total");
+    if (!cartItems || !cartTotal) return; // Only run this on the cart page
+
     cartItems.innerHTML = "";
 
     let total = 0;
     cart.forEach(item => {
         const div = document.createElement("div");
+        div.classList.add("cart-item");
         div.innerHTML = `
-            <p>${item.title} - $${item.price.toFixed(2)} x ${item.quantity}</p>
-            <button onclick="removeFromCart(${item.id})">Remove</button>
+            <img src="${item.image}" alt="${item.title}" class="cart-item-image">
+            <div>
+                <p><strong>${item.title}</strong></p>
+                <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
+            </div>
+            <button onclick="removeFromCart(${item.id})" class="remove-btn">Remove</button>
         `;
         cartItems.appendChild(div);
         total += item.price * item.quantity;
