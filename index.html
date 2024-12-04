@@ -20,21 +20,11 @@
     <main>
         <h2>Welcome to Page Turner</h2>
         <p>Your gateway to literary adventures!</p>
+        <input type="text" id="search-bar" placeholder="Search for books..." oninput="filterBooks()">
         <section id="books">
             <h3>Featured Books</h3>
-            <div class="book-grid">
-                <div class="book">
-                    <img src="images/book1.jpg" alt="Book 1">
-                    <h4>Book Title 1</h4>
-                    <p>$10.99</p>
-                    <button onclick="addToCart('Book Title 1', 10.99)">Add to Cart</button>
-                </div>
-                <div class="book">
-                    <img src="images/book2.jpg" alt="Book 2">
-                    <h4>Book Title 2</h4>
-                    <p>$12.99</p>
-                    <button onclick="addToCart('Book Title 2', 12.99)">Add to Cart</button>
-                </div>
+            <div class="book-grid" id="book-list">
+                <!-- Books dynamically loaded here -->
             </div>
         </section>
     </main>
