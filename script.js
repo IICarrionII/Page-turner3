@@ -1,15 +1,15 @@
-// Book Data
+// Updated Book Data with Random Fictional Titles
 const books = [
-    { id: 1, title: "The Great Gatsby", price: 10.99, image: "images/book1.jpg" },
-    { id: 2, title: "To Kill a Mockingbird", price: 12.99, image: "images/book2.jpg" },
-    { id: 3, title: "1984", price: 15.99, image: "images/book3.jpg" },
-    { id: 4, title: "Pride and Prejudice", price: 9.99, image: "images/book4.jpg" },
-    { id: 5, title: "Moby-Dick", price: 11.99, image: "images/book5.jpg" },
-    { id: 6, title: "The Catcher in the Rye", price: 13.99, image: "images/book6.jpg" },
-    { id: 7, title: "Brave New World", price: 14.99, image: "images/book7.jpg" },
-    { id: 8, title: "Animal Farm", price: 8.99, image: "images/book8.jpg" },
-    { id: 9, title: "The Hobbit", price: 16.99, image: "images/book9.jpg" },
-    { id: 10, title: "The Lord of the Rings", price: 19.99, image: "images/book10.jpg" },
+    { id: 1, title: "Shadows of Eternity", price: 10.99, image: "images/book1.jpg" },
+    { id: 2, title: "The Forgotten Realm", price: 12.99, image: "images/book2.jpg" },
+    { id: 3, title: "Whispers in the Wind", price: 15.99, image: "images/book3.jpg" },
+    { id: 4, title: "Echoes of the Past", price: 9.99, image: "images/book4.jpg" },
+    { id: 5, title: "Crimson Horizon", price: 11.99, image: "images/book5.jpg" },
+    { id: 6, title: "Secrets of the Deep", price: 13.99, image: "images/book6.jpg" },
+    { id: 7, title: "The Enchanted Forest", price: 14.99, image: "images/book7.jpg" },
+    { id: 8, title: "Legends of Lumora", price: 8.99, image: "images/book8.jpg" },
+    { id: 9, title: "Mystic Tides", price: 16.99, image: "images/book9.jpg" },
+    { id: 10, title: "The Lost Chronicle", price: 19.99, image: "images/book10.jpg" },
 ];
 
 // Cart Storage
