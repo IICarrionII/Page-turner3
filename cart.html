@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart - Page Turner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Your Cart - Page Turner</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <h1>Page Turner</h1>
+        <h1>Your Cart</h1>
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -21,16 +20,22 @@
         </nav>
     </header>
     <main>
-        <h2>Your Cart</h2>
-        <div id="cart-items">
-            <!-- Cart items dynamically loaded here -->
-        </div>
+        <div id="cart-items"></div>
         <p>Total: $<span id="cart-total">0.00</span></p>
-        <button id="checkout">Checkout</button>
+
+        <!-- Stripe Payment Element -->
+        <div id="payment-form"></div>
+        <button id="submit-payment">Submit Payment</button>
+        <p id="payment-status"></p>
     </main>
     <footer>
         <p>© 2024 Page Turner Bookstore. All rights reserved.</p>
     </footer>
-    <script src="script.js"></script>
+
+    <!-- Include Stripe.js before your custom script -->
+<!-- cart.html -->
+<script src="https://js.stripe.com/v3/"></script>
+<script src="script.js"></script>
+
 </body>
 </html>

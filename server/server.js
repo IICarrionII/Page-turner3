@@ -2,6 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
+const stripe = require("stripe")("sk_test_51QTe37Ggb0HFI2Kdvohdaq57HLywXhsR9ihgzvBj5PosMF1ocJKyGhHLISKDcUMFd7VBuWmajqtxtej0owiwf6ql001t6Bv7tO");
+
 
 const app = express();
 const PORT = 3000;
@@ -56,71 +58,51 @@ db.serialize(() => {
   console.log("Tables created successfully.");
 });
 
-// Insert Sample Books
-const sampleBooks = [
-  { title: "Shadows of Eternity", author: "John Doe", price: 10.99, stock: 50, category: "Fantasy" },
-  { title: "The Forgotten Realm", author: "Jane Smith", price: 12.99, stock: 30, category: "Adventure" },
-  { title: "Whispers in the Wind", author: "Emily Brown", price: 15.99, stock: 20, category: "Mystery" },
-  { title: "Echoes of the Past", author: "Michael Johnson", price: 9.99, stock: 25, category: "History" },
-  { title: "Crimson Horizon", author: "Sophia Wilson", price: 11.99, stock: 40, category: "Sci-Fi" },
-  { title: "Secrets of the Deep", author: "Chris Green", price: 13.99, stock: 15, category: "Thriller" },
-  { title: "The Enchanted Forest", author: "Lily White", price: 14.99, stock: 35, category: "Fantasy" },
-  { title: "Legends of Lumora", author: "Anna Lee", price: 8.99, stock: 60, category: "Adventure" },
-  { title: "Mystic Tides", author: "Ethan Harris", price: 16.99, stock: 10, category: "Mystery" },
-  { title: "The Lost Chronicle", author: "Olivia Parker", price: 19.99, stock: 5, category: "Fantasy" },
-];
-
-// Insert Sample Data into Books Table
-function populateBooks() {
-  db.serialize(() => {
-    sampleBooks.forEach((book) => {
-      db.run(
-        `INSERT INTO books (title, author, price, stock, category) VALUES (?, ?, ?, ?, ?)`,
-        [book.title, book.author, book.price, book.stock, book.category],
-        (err) => {
-          if (err && err.message.includes("UNIQUE constraint failed")) {
-            // Ignore duplicate entries
-            return;
-          } else if (err) {
-            console.error("Error inserting sample books:", err.message);
-          }
-        }
-      );
-    });
-    console.log("Sample books added successfully.");
-  });
-}
-
-// Call populateBooks to insert the sample data
-populateBooks();
-
 // Routes
 // Get All Books
 app.get("/api/books", (req, res) => {
-  db.all("SELECT * FROM books", [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.json(rows);
-    }
-  });
+    db.all("SELECT * FROM books", [], (err, rows) => {
+        if (err) {
+            console.error("Error fetching books:", err.message);
+            res.status(500).json({ error: err.message });
+        } else {
+            console.log("Books fetched successfully:", rows); // Debugging log
+            res.json(rows);
+        }
+    });
 });
 
-// Add a New Book
-app.post("/api/books", (req, res) => {
-  const { title, author, price, stock, category } = req.body;
-  db.run(
-    `INSERT INTO books (title, author, price, stock, category) VALUES (?, ?, ?, ?, ?)`,
-    [title, author, price, stock, category],
-    function (err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-      } else {
-        res.json({ id: this.lastID });
-      }
+
+// Checkout Route
+app.post("/api/checkout", async (req, res) => {
+    const { customerId, items } = req.body;
+
+    if (!customerId || !items || items.length === 0) {
+        return res.status(400).json({ error: "Invalid request data" });
     }
-  );
+
+    let totalAmount = 0;
+    items.forEach((item) => {
+        if (!item.price || !item.quantity) {
+            return res.status(400).json({ error: "Invalid item format" });
+        }
+        totalAmount += item.price * item.quantity;
+    });
+
+    try {
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(totalAmount * 100), // Convert to cents
+            currency: "usd",
+            automatic_payment_methods: { enabled: true },
+        });
+
+        res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error) {
+        console.error("Error processing checkout:", error.message);
+        res.status(500).json({ error: "Failed to process checkout" });
+    }
 });
+
 
 // Start the Server
 app.listen(PORT, () => {
