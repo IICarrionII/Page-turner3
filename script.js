@@ -1,47 +1,48 @@
-// Updated Book Data with Random Fictional Titles
-const books = [
-    { id: 1, title: "Shadows of Eternity", price: 10.99, image: "images/book1.jpg" },
-    { id: 2, title: "The Forgotten Realm", price: 12.99, image: "images/book2.jpg" },
-    { id: 3, title: "Whispers in the Wind", price: 15.99, image: "images/book3.jpg" },
-    { id: 4, title: "Echoes of the Past", price: 9.99, image: "images/book4.jpg" },
-    { id: 5, title: "Crimson Horizon", price: 11.99, image: "images/book5.jpg" },
-    { id: 6, title: "Secrets of the Deep", price: 13.99, image: "images/book6.jpg" },
-    { id: 7, title: "The Enchanted Forest", price: 14.99, image: "images/book7.jpg" },
-    { id: 8, title: "Legends of Lumora", price: 8.99, image: "images/book8.jpg" },
-    { id: 9, title: "Mystic Tides", price: 16.99, image: "images/book9.jpg" },
-    { id: 10, title: "The Lost Chronicle", price: 19.99, image: "images/book10.jpg" },
-];
+// Fetch Books from Backend
+function loadBooks() {
+    fetch('/api/books')
+        .then(response => response.json())
+        .then(books => {
+            const bookList = document.getElementById("book-list");
+            if (!bookList) return; // Only run this on pages with the book list
+
+            bookList.innerHTML = books.map(book => `
+                <div class="book">
+                    <img src="images/book${book.id}.jpg" alt="${book.title}">
+                    <h4>${book.title}</h4>
+                    <p>$${book.price.toFixed(2)}</p>
+                    <button onclick="addToCart(${book.id})">Add to Cart</button>
+                </div>
+            `).join("");
+        })
+        .catch(err => console.error("Error fetching books:", err));
+}
 
 // Cart Storage
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// Load Books
-function loadBooks() {
-    const bookList = document.getElementById("book-list");
-    if (!bookList) return; // Only run this on pages with the book list
-    bookList.innerHTML = books.map(book => `
-        <div class="book">
-            <img src="${book.image}" alt="${book.title}">
-            <h4>${book.title}</h4>
-            <p>$${book.price.toFixed(2)}</p>
-            <button onclick="addToCart(${book.id})">Add to Cart</button>
-        </div>
-    `).join("");
-}
-
 // Add to Cart
 function addToCart(id) {
-    const book = books.find(book => book.id === id);
-    const cartItem = cart.find(item => item.id === id);
-    if (cartItem) {
-        cartItem.quantity += 1;
-    } else {
-        cart.push({ ...book, quantity: 1 });
-    }
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert(`${book.title} added to cart!`);
+    const existingItem = cart.find(item => item.id === id);
 
-    // Update the cart on the cart page if applicable
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        // Fetch book details from backend
+        fetch(`/api/books`)
+            .then(response => response.json())
+            .then(books => {
+                const book = books.find(b => b.id === id);
+                if (book) {
+                    cart.push({ ...book, quantity: 1 });
+                    localStorage.setItem("cart", JSON.stringify(cart));
+                    alert(`${book.title} added to cart!`);
+                }
+            })
+            .catch(err => console.error("Error fetching book details:", err));
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
     loadCart();
 }
 
@@ -49,7 +50,7 @@ function addToCart(id) {
 function loadCart() {
     const cartItems = document.getElementById("cart-items");
     const cartTotal = document.getElementById("cart-total");
-    if (!cartItems || !cartTotal) return; // Only run this on the cart page
+    if (!cartItems || !cartTotal) return; // Only run this on pages with the cart
 
     cartItems.innerHTML = "";
 
@@ -58,7 +59,7 @@ function loadCart() {
         const div = document.createElement("div");
         div.classList.add("cart-item");
         div.innerHTML = `
-            <img src="${item.image}" alt="${item.title}" class="cart-item-image">
+            <img src="images/book${item.id}.jpg" alt="${item.title}" class="cart-item-image">
             <div>
                 <p><strong>${item.title}</strong></p>
                 <p>$${item.price.toFixed(2)} x ${item.quantity}</p>
@@ -86,15 +87,17 @@ function checkout() {
         return;
     }
 
+    // Simulate checkout process (can be extended for backend integration)
     alert("Thank you for your purchase! Your cart will now be cleared.");
     cart = [];
     localStorage.setItem("cart", JSON.stringify(cart));
     loadCart();
 }
 
-document.getElementById("checkout")?.addEventListener("click", checkout);
-
+// Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
     loadBooks();
     loadCart();
 });
+
+document.getElementById("checkout")?.addEventListener("click", checkout);
