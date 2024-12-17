@@ -156,6 +156,34 @@ async function handlePayment() {
         paymentStatus.textContent = "Payment successful! Redirecting...";
     }
 }
+//admin button
+async function checkAdminStatus() {
+    const response = await fetch("/api/admin/status");
+    const data = await response.json();
+
+    if (data.isAdmin) {
+        document.getElementById("admin-button").style.display = "inline";
+    }
+}
+
+// Run on page load
+document.addEventListener("DOMContentLoaded", () => {
+    checkAdminStatus();
+});
+// Function to check if the user is an admin
+async function checkAdminStatus() {
+    const response = await fetch("/api/admin/status");
+    const data = await response.json();
+
+    if (data.isAdmin) {
+        document.getElementById("admin-button").style.display = "inline";
+    }
+}
+
+// Run on page load
+document.addEventListener("DOMContentLoaded", () => {
+    checkAdminStatus();
+});
 
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {

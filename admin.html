@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="admin.html">Admin</a></li>
+                <li><a href="#" id="logout-button">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <!-- Low Stock Alerts -->
+        <section id="low-stock">
+            <h2>Low Stock Alerts</h2>
+            <div id="low-stock-list">
+                <p>Loading...</p>
+            </div>
+        </section>
+
+        <!-- Inventory Management -->
+        <section id="inventory-management">
+            <h2>Inventory Management</h2>
+            <button onclick="showAddBookForm()">Add New Book</button>
+            <div id="book-form" style="display: none;">
+                <input type="text" id="book-title" placeholder="Title" required />
+                <input type="text" id="book-author" placeholder="Author" required />
+                <input type="number" id="book-price" placeholder="Price" required />
+                <input type="number" id="book-stock" placeholder="Stock" required />
+                <input type="text" id="book-category" placeholder="Category" required />
+                <button onclick="addBook()">Submit</button>
+            </div>
+            <table id="books-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="exportReport('books')">Export Books Report</button>
+        </section>
+
+        <!-- Order Management -->
+        <section id="order-management">
+            <h2>Order Management</h2>
+            <table id="orders-table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Books</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="exportReport('orders')">Export Orders Report</button>
+        </section>
+    </main>
+    <footer>
+        <p>© 2024 Page Turner Bookstore. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Fetch and display books
+        function fetchBooks() {
+            fetch('/api/books')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector("#books-table tbody");
+                    tbody.innerHTML = '';
+                    data.forEach(book => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${book.id}</td>
+                            <td>${book.title}</td>
+                            <td>${book.author}</td>
+                            <td>$${book.price.toFixed(2)}</td>
+                            <td>${book.stock}</td>
+                            <td>${book.category}</td>
+                            <td>
+                                <button onclick="deleteBook(${book.id})">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(err => console.error("Error fetching books:", err));
+        }
+
+        // Fetch and display low stock books
+        function fetchLowStock() {
+            fetch('/api/books/low-stock')
+                .then(response => response.json())
+                .then(books => {
+                    const lowStockList = document.getElementById("low-stock-list");
+                    if (books.length === 0) {
+                        lowStockList.innerHTML = "<p>All books are well-stocked.</p>";
+                        return;
+                    }
+                    lowStockList.innerHTML = `
+                        <ul>
+                            ${books.map(book => `<li>${book.title} - Stock: ${book.stock}</li>`).join('')}
+                        </ul>
+                    `;
+                })
+                .catch(err => console.error("Error fetching low stock:", err));
+        }
+
+        // Add a new book
+        function addBook() {
+            const title = document.getElementById("book-title").value;
+            const author = document.getElementById("book-author").value;
+            const price = parseFloat(document.getElementById("book-price").value);
+            const stock = parseInt(document.getElementById("book-stock").value);
+            const category = document.getElementById("book-category").value;
+
+            fetch('/api/books', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, author, price, stock, category }),
+            })
+                .then(() => {
+                    alert("Book added successfully!");
+                    fetchBooks();
+                    document.getElementById("book-form").style.display = "none";
+                })
+                .catch(err => console.error("Error adding book:", err));
+        }
+
+        // Delete a book
+        function deleteBook(bookId) {
+            fetch(`/api/books/${bookId}`, { method: "DELETE" })
+                .then(() => {
+                    alert("Book deleted successfully!");
+                    fetchBooks();
+                })
+                .catch(err => console.error("Error deleting book:", err));
+        }
+
+        // Fetch and display orders
+        function fetchOrders() {
+            fetch('/api/orders')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector("#orders-table tbody");
+                    tbody.innerHTML = '';
+                    data.forEach(order => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${order.order_id}</td>
+                            <td>${order.customer_name} (${order.customer_email})</td>
+                            <td>${order.books}</td>
+                            <td>$${order.total_price.toFixed(2)}</td>
+                            <td>${order.order_date}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(err => console.error("Error fetching orders:", err));
+        }
+
+        // Export report (books or orders)
+        function exportReport(type) {
+            const url = `/api/export/${type}`;
+            window.location.href = url; // Triggers download
+        }
+
+        // Show the Add Book form
+        function showAddBookForm() {
+            document.getElementById("book-form").style.display = "block";
+        }
+
+        // Logout functionality
+        document.getElementById("logout-button").addEventListener("click", () => {
+            fetch("/api/admin/logout", { method: "POST" })
+                .then(() => {
+                    window.location.href = "admin-login.html";
+                })
+                .catch(err => console.error("Error logging out:", err));
+        });
+
+        // Fetch all data on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchBooks();
+            fetchLowStock();
+            fetchOrders();
+        });
+    </script>
+</body>
+</html>

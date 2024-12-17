@@ -16,14 +16,14 @@
                 <li><a href="contact.html">Contact</a></li>
                 <li><a href="cart.html">Cart</a></li>
                 <li><a href="login.html">Login</a></li>
+                <li><a href="admin-login.html">Admin</a></li> 
             </ul>
         </nav>
+        
     </header>
     <main>
         <div id="cart-items"></div>
         <p>Total: $<span id="cart-total">0.00</span></p>
-
-        <!-- Stripe Payment Element -->
         <div id="payment-form"></div>
         <button id="submit-payment">Submit Payment</button>
         <p id="payment-status"></p>
@@ -31,11 +31,7 @@
     <footer>
         <p>© 2024 Page Turner Bookstore. All rights reserved.</p>
     </footer>
-
-    <!-- Include Stripe.js before your custom script -->
-<!-- cart.html -->
-<script src="https://js.stripe.com/v3/"></script>
-<script src="script.js"></script>
-
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="script.js"></script>
 </body>
 </html>
