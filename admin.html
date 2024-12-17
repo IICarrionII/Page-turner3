@@ -72,6 +72,25 @@
             </table>
             <button onclick="exportReport('orders')">Export Orders Report</button>
         </section>
+
+        <!-- Support Ticket Management -->
+        <section id="ticket-management">
+            <h2>Support Ticket Management</h2>
+            <table id="tickets-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Subject</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
     </main>
     <footer>
         <p>© 2024 Page Turner Bookstore. All rights reserved.</p>
@@ -86,121 +105,74 @@
                     const tbody = document.querySelector("#books-table tbody");
                     tbody.innerHTML = '';
                     data.forEach(book => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${book.id}</td>
-                            <td>${book.title}</td>
-                            <td>${book.author}</td>
-                            <td>$${book.price.toFixed(2)}</td>
-                            <td>${book.stock}</td>
-                            <td>${book.category}</td>
-                            <td>
-                                <button onclick="deleteBook(${book.id})">Delete</button>
-                            </td>
+                        const row = `
+                            <tr>
+                                <td>${book.id}</td>
+                                <td>${book.title}</td>
+                                <td>${book.author}</td>
+                                <td>$${book.price.toFixed(2)}</td>
+                                <td>${book.stock}</td>
+                                <td>${book.category}</td>
+                                <td>
+                                    <button onclick="deleteBook(${book.id})">Delete</button>
+                                </td>
+                            </tr>
                         `;
-                        tbody.appendChild(row);
+                        tbody.insertAdjacentHTML("beforeend", row);
                     });
-                })
-                .catch(err => console.error("Error fetching books:", err));
+                });
         }
 
-        // Fetch and display low stock books
-        function fetchLowStock() {
-            fetch('/api/books/low-stock')
+        // Fetch and display tickets
+        function fetchTickets() {
+            fetch('/api/tickets')
                 .then(response => response.json())
-                .then(books => {
-                    const lowStockList = document.getElementById("low-stock-list");
-                    if (books.length === 0) {
-                        lowStockList.innerHTML = "<p>All books are well-stocked.</p>";
-                        return;
-                    }
-                    lowStockList.innerHTML = `
-                        <ul>
-                            ${books.map(book => `<li>${book.title} - Stock: ${book.stock}</li>`).join('')}
-                        </ul>
-                    `;
-                })
-                .catch(err => console.error("Error fetching low stock:", err));
-        }
-
-        // Add a new book
-        function addBook() {
-            const title = document.getElementById("book-title").value;
-            const author = document.getElementById("book-author").value;
-            const price = parseFloat(document.getElementById("book-price").value);
-            const stock = parseInt(document.getElementById("book-stock").value);
-            const category = document.getElementById("book-category").value;
-
-            fetch('/api/books', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, author, price, stock, category }),
-            })
-                .then(() => {
-                    alert("Book added successfully!");
-                    fetchBooks();
-                    document.getElementById("book-form").style.display = "none";
-                })
-                .catch(err => console.error("Error adding book:", err));
-        }
-
-        // Delete a book
-        function deleteBook(bookId) {
-            fetch(`/api/books/${bookId}`, { method: "DELETE" })
-                .then(() => {
-                    alert("Book deleted successfully!");
-                    fetchBooks();
-                })
-                .catch(err => console.error("Error deleting book:", err));
-        }
-
-        // Fetch and display orders
-        function fetchOrders() {
-            fetch('/api/orders')
-                .then(response => response.json())
-                .then(data => {
-                    const tbody = document.querySelector("#orders-table tbody");
+                .then(tickets => {
+                    const tbody = document.querySelector("#tickets-table tbody");
                     tbody.innerHTML = '';
-                    data.forEach(order => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${order.order_id}</td>
-                            <td>${order.customer_name} (${order.customer_email})</td>
-                            <td>${order.books}</td>
-                            <td>$${order.total_price.toFixed(2)}</td>
-                            <td>${order.order_date}</td>
+                    tickets.forEach(ticket => {
+                        const row = `
+                            <tr>
+                                <td>${ticket.id}</td>
+                                <td>${ticket.user_name}</td>
+                                <td>${ticket.email}</td>
+                                <td>${ticket.subject}</td>
+                                <td>${ticket.description}</td>
+                                <td>
+                                    <select onchange="updateTicketStatus(${ticket.id}, this.value)">
+                                        <option value="Open" ${ticket.status === "Open" ? "selected" : ""}>Open</option>
+                                        <option value="In Progress" ${ticket.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                                        <option value="Closed" ${ticket.status === "Closed" ? "selected" : ""}>Closed</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button onclick="deleteTicket(${ticket.id})">Delete</button>
+                                </td>
+                            </tr>
                         `;
-                        tbody.appendChild(row);
+                        tbody.insertAdjacentHTML("beforeend", row);
                     });
-                })
-                .catch(err => console.error("Error fetching orders:", err));
+                });
         }
 
-        // Export report (books or orders)
-        function exportReport(type) {
-            const url = `/api/export/${type}`;
-            window.location.href = url; // Triggers download
+        // Update ticket status
+        function updateTicketStatus(id, status) {
+            fetch(`/api/tickets/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status }),
+            }).then(() => fetchTickets());
         }
 
-        // Show the Add Book form
-        function showAddBookForm() {
-            document.getElementById("book-form").style.display = "block";
+        // Delete a ticket
+        function deleteTicket(id) {
+            fetch(`/api/tickets/${id}`, { method: "DELETE" }).then(() => fetchTickets());
         }
-
-        // Logout functionality
-        document.getElementById("logout-button").addEventListener("click", () => {
-            fetch("/api/admin/logout", { method: "POST" })
-                .then(() => {
-                    window.location.href = "admin-login.html";
-                })
-                .catch(err => console.error("Error logging out:", err));
-        });
 
         // Fetch all data on page load
         document.addEventListener("DOMContentLoaded", () => {
             fetchBooks();
-            fetchLowStock();
-            fetchOrders();
+            fetchTickets();
         });
     </script>
 </body>

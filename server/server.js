@@ -79,6 +79,18 @@ db.serialize(() => {
         )
     `);
 });
+// Create Tickets Table
+db.run(`
+    CREATE TABLE IF NOT EXISTS tickets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        description TEXT NOT NULL,
+        status TEXT DEFAULT 'Open',
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+`);
 
 // Admin Login
 app.post("/api/admin/login", (req, res) => {
@@ -313,6 +325,44 @@ app.post("/api/login", (req, res) => {
         // Generate JWT Token for session management
         const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: "1h" });
         res.json({ success: "Login successful.", token });
+    });
+});
+// Submit a New Ticket
+app.post("/api/tickets", (req, res) => {
+    const { user_name, email, subject, description } = req.body;
+
+    db.run(
+        `INSERT INTO tickets (user_name, email, subject, description) VALUES (?, ?, ?, ?)`,
+        [user_name, email, subject, description],
+        function (err) {
+            if (err) {
+                return res.status(500).json({ error: "Failed to submit ticket" });
+            }
+            res.json({ success: true, id: this.lastID });
+        }
+    );
+});
+
+// Get All Tickets (For Admin)
+app.get("/api/tickets", (req, res) => {
+    db.all(`SELECT * FROM tickets`, [], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ error: "Failed to fetch tickets" });
+        }
+        res.json(rows);
+    });
+});
+
+// Update Ticket Status (For Admin)
+app.put("/api/tickets/:id", (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    db.run(`UPDATE tickets SET status = ? WHERE id = ?`, [status, id], function (err) {
+        if (err) {
+            return res.status(500).json({ error: "Failed to update ticket status" });
+        }
+        res.json({ success: true, updated: this.changes });
     });
 });
 // Start the Server
